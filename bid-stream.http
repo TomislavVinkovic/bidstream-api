@@ -1,0 +1,6 @@
+@bid_stream_HostAddress = http://localhost:5296
+
+GET {{bid_stream_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
