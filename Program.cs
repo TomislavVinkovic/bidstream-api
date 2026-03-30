@@ -1,11 +1,15 @@
 using System.Text;
 using BidStream.Data;
+using BidStream.Mappers;
 using BidStream.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+
+MapsterConfig.RegisterMappings();
 
 // Add JWT authentication setup
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
@@ -55,5 +59,10 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();
+
+app.UseForwardedHeaders(new ForwardedHeadersOptions
+{
+    ForwardedHeaders = ForwardedHeaders.XForwardedFor | ForwardedHeaders.XForwardedProto
+});
 
 app.Run();

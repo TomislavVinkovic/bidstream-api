@@ -21,4 +21,5 @@ public class User : BaseEntity
     public string Password { get; set; } = string.Empty;
 
     public ICollection<Bid> Bids { get; set; } = new List<Bid>();
+    public ICollection<RefreshToken> RefreshTokens { get; set; } = new List<RefreshToken>();
 }
