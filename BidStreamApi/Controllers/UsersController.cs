@@ -1,4 +1,3 @@
-
 using BidStream.Extensions;
 using BidStream.Services.Interface;
 using Microsoft.AspNetCore.Authorization;

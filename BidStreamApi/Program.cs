@@ -63,18 +63,20 @@ builder.Services.AddScoped<IHttpContextService, HttpContextService>();
 builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
+builder.Services.AddScoped<IAuctionItemService, AuctionItemService>();
 
 builder.Services.AddOpenApi();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("Frontend", policy =>
-    {
-       policy.WithOrigins("http://localhost:4200") 
-              .AllowAnyHeader()
-              .AllowAnyMethod();
-    });
-});
+// TODO: Add CORS settings for the Angular front-end when I build it
+// builder.Services.AddCors(options =>
+// {
+//     options.AddPolicy("Frontend", policy =>
+//     {
+//        policy.WithOrigins("http://localhost:4200") 
+//               .AllowAnyHeader()
+//               .AllowAnyMethod();
+//     });
+// });
 
 builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
 builder.Services.AddProblemDetails();

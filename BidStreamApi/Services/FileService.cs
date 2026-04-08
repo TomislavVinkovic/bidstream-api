@@ -2,7 +2,6 @@ namespace BidStream.Services;
 
 using BidStream.Services.Interface;
 
-
 public class FileService : IFileService
 {
     private readonly IHttpContextService _httpContextService;
@@ -42,5 +41,18 @@ public class FileService : IFileService
         }
 
        return $"/uploads/{uniqueFileName}";
+    }
+
+    public async Task<List<string>> UploadMultipleAsync(IEnumerable<(Stream fileStream, string extension)> files)
+    {
+        var uploadTasks = new List<Task<string>>();
+        foreach (var file in files)
+        {
+            uploadTasks.Add(UploadAsync(file.fileStream, file.extension));
+        }
+
+        var uploadedUrls = await Task.WhenAll(uploadTasks);
+
+        return uploadedUrls.ToList();
     }
 }
