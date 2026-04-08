@@ -1,5 +1,4 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -48,10 +47,8 @@ namespace bid_stream.Migrations
                     CurrentHighestBid = table.Column<decimal>(type: "decimal(65,30)", nullable: false),
                     EndTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     IsClosed = table.Column<bool>(type: "tinyint(1)", nullable: false),
-                    SellerId = table.Column<int>(type: "int", nullable: false),
-                    SellerId1 = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
-                    WinnerId = table.Column<int>(type: "int", nullable: true),
-                    WinnerId1 = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
+                    SellerId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    WinnerId = table.Column<Guid>(type: "char(36)", nullable: true, collation: "ascii_general_ci"),
                     RowVersion = table.Column<DateTime>(type: "timestamp(6)", rowVersion: true, nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     UpdatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
@@ -60,14 +57,14 @@ namespace bid_stream.Migrations
                 {
                     table.PrimaryKey("PK_AuctionItems", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_AuctionItems_User_SellerId1",
-                        column: x => x.SellerId1,
+                        name: "FK_AuctionItems_User_SellerId",
+                        column: x => x.SellerId,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_AuctionItems_User_WinnerId1",
-                        column: x => x.WinnerId1,
+                        name: "FK_AuctionItems_User_WinnerId",
+                        column: x => x.WinnerId,
                         principalTable: "User",
                         principalColumn: "Id");
                 })
@@ -77,14 +74,11 @@ namespace bid_stream.Migrations
                 name: "RefreshTokens",
                 columns: table => new
                 {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("MySql:ValueGenerationStrategy", MySqlValueGenerationStrategy.IdentityColumn),
-                    UserId = table.Column<int>(type: "int", nullable: false),
-                    UserId1 = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    Id = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
+                    UserId = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     Token = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    Family = table.Column<string>(type: "longtext", nullable: false)
-                        .Annotation("MySql:CharSet", "utf8mb4"),
+                    Family = table.Column<Guid>(type: "char(36)", nullable: false, collation: "ascii_general_ci"),
                     IsRevoked = table.Column<bool>(type: "tinyint(1)", nullable: false),
                     ExpiryTime = table.Column<DateTime>(type: "datetime(6)", nullable: false),
                     CreatedAt = table.Column<DateTime>(type: "datetime(6)", nullable: false)
@@ -93,8 +87,8 @@ namespace bid_stream.Migrations
                 {
                     table.PrimaryKey("PK_RefreshTokens", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_RefreshTokens_User_UserId1",
-                        column: x => x.UserId1,
+                        name: "FK_RefreshTokens_User_UserId",
+                        column: x => x.UserId,
                         principalTable: "User",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
@@ -159,14 +153,14 @@ namespace bid_stream.Migrations
                 column: "AuctionItemId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuctionItems_SellerId1",
+                name: "IX_AuctionItems_SellerId",
                 table: "AuctionItems",
-                column: "SellerId1");
+                column: "SellerId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_AuctionItems_WinnerId1",
+                name: "IX_AuctionItems_WinnerId",
                 table: "AuctionItems",
-                column: "WinnerId1");
+                column: "WinnerId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Bid_AuctionItemId",
@@ -179,9 +173,9 @@ namespace bid_stream.Migrations
                 column: "UserId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_RefreshTokens_UserId1",
+                name: "IX_RefreshTokens_UserId",
                 table: "RefreshTokens",
-                column: "UserId1");
+                column: "UserId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_User_Email",

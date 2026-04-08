@@ -72,10 +72,7 @@ namespace bid_stream.Migrations
                         .ValueGeneratedOnAddOrUpdate()
                         .HasColumnType("timestamp(6)");
 
-                    b.Property<int>("SellerId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid>("SellerId1")
+                    b.Property<Guid>("SellerId")
                         .HasColumnType("char(36)");
 
                     b.Property<decimal>("StartingPrice")
@@ -88,17 +85,14 @@ namespace bid_stream.Migrations
                     b.Property<DateTime>("UpdatedAt")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<int?>("WinnerId")
-                        .HasColumnType("int");
-
-                    b.Property<Guid?>("WinnerId1")
+                    b.Property<Guid?>("WinnerId")
                         .HasColumnType("char(36)");
 
                     b.HasKey("Id");
 
-                    b.HasIndex("SellerId1");
+                    b.HasIndex("SellerId");
 
-                    b.HasIndex("WinnerId1");
+                    b.HasIndex("WinnerId");
 
                     b.ToTable("AuctionItems");
                 });
@@ -138,11 +132,9 @@ namespace bid_stream.Migrations
 
             modelBuilder.Entity("BidStream.Models.Entities.RefreshToken", b =>
                 {
-                    b.Property<int>("Id")
+                    b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("Id"));
+                        .HasColumnType("char(36)");
 
                     b.Property<DateTime>("CreatedAt")
                         .HasColumnType("datetime(6)");
@@ -150,9 +142,8 @@ namespace bid_stream.Migrations
                     b.Property<DateTime>("ExpiryTime")
                         .HasColumnType("datetime(6)");
 
-                    b.Property<string>("Family")
-                        .IsRequired()
-                        .HasColumnType("longtext");
+                    b.Property<Guid>("Family")
+                        .HasColumnType("char(36)");
 
                     b.Property<bool>("IsRevoked")
                         .HasColumnType("tinyint(1)");
@@ -221,13 +212,13 @@ namespace bid_stream.Migrations
                 {
                     b.HasOne("BidStream.Models.Entities.User", "Seller")
                         .WithMany()
-                        .HasForeignKey("SellerId1")
+                        .HasForeignKey("SellerId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
                     b.HasOne("BidStream.Models.Entities.User", "Winner")
                         .WithMany()
-                        .HasForeignKey("WinnerId1");
+                        .HasForeignKey("WinnerId");
 
                     b.Navigation("Seller");
 

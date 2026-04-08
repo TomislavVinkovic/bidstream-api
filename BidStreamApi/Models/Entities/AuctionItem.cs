@@ -14,10 +14,10 @@ public class AuctionItem : BaseEntity
     public DateTime EndTime { get; set; }
     public bool IsClosed { get; set; } = false;
     
-    public int SellerId { get; set; }
+    public Guid SellerId { get; set; }
     public User Seller { get; set; } = null!;
     
-    public int? WinnerId { get; set; }
+    public Guid? WinnerId { get; set; }
     public User? Winner { get; set; }
 
     // EF Core Concurrency Token
