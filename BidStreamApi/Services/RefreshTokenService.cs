@@ -46,7 +46,7 @@ public class RefreshTokenService : IRefreshTokenService
                 .RefreshTokens
                 .Include(t => t.User)
                 .AsNoTracking()
-                .FirstOrDefaultAsync(t => t.Token == rawToken);
+                .FirstOrDefaultAsync(t => t.Token == hashedToken);
     }
 
     public async Task<RefreshToken?> GetByTokenAndUserAsync(string rawToken, Guid userId)
@@ -56,13 +56,13 @@ public class RefreshTokenService : IRefreshTokenService
             .RefreshTokens
             .Include(t => t.User)
             .AsNoTracking()
-            .FirstOrDefaultAsync(t => t.Token == rawToken && t.UserId == userId);
+            .FirstOrDefaultAsync(t => t.Token == hashedToken && t.UserId == userId);
     }
 
     public async Task<bool> RevokeAsync(string rawToken)
     {
         var hashedToken = _jwtService.HashToken(rawToken);
-        var token = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == rawToken);
+        var token = await _context.RefreshTokens.FirstOrDefaultAsync(t => t.Token == hashedToken);
 
         if(token == null)
         {
@@ -92,9 +92,10 @@ public class RefreshTokenService : IRefreshTokenService
 
         public async Task<(string refreshToken, string hashedRefreshToken)?> RenewTokenAsync(RenewRefreshTokenDto dto)
         {
+            var hashedToken = _jwtService.HashToken(dto.RawToken);
             var existingToken = await _context
                 .RefreshTokens
-                .FirstOrDefaultAsync(t => t.Token == dto.RawToken && t.UserId == dto.UserId);
+                .FirstOrDefaultAsync(t => t.Token == hashedToken && t.UserId == dto.UserId);
 
             if(existingToken == null)
             {

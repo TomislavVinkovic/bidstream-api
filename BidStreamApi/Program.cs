@@ -18,9 +18,13 @@ MapsterConfig.RegisterMappings();
 var jwtSettings = builder.Configuration.GetSection("JwtSettings");
 var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!);
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-    .AddJwtBearer(options =>
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme).AddJwtBearer();
+builder.Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
+    .Configure<IConfiguration>((options, configuration) =>
     {
+        var jwtSettings = configuration.GetSection("JwtSettings");
+        var secretKey = Encoding.UTF8.GetBytes(jwtSettings["SecretKey"]!);
+
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -32,6 +36,7 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             IssuerSigningKey = new SymmetricSecurityKey(secretKey)
         };
     });
+
 builder.Services.Configure<JwtSettingsOptions>(
     builder.Configuration.GetSection("JwtSettings")
 );
@@ -39,11 +44,18 @@ builder.Services.Configure<JwtSettingsOptions>(
 builder.Services.AddControllers();
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseMySql(
-        connectionString,
-        ServerVersion.AutoDetect(connectionString)
-    ));
+
+if (!builder.Environment.IsEnvironment("Testing"))
+{
+    builder.Services.AddDbContext<AppDbContext>(options =>
+        options.UseMySql(
+            connectionString,
+            ServerVersion.AutoDetect(connectionString)
+        )
+    );
+}
+
+builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IFileService, FileService>();
@@ -53,7 +65,6 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddOpenApi();
-builder.Services.AddHttpContextAccessor();
 
 builder.Services.AddCors(options =>
 {
@@ -90,3 +101,8 @@ app.UseForwardedHeaders(new ForwardedHeadersOptions
 });
 
 app.Run();
+
+public partial class Program
+{
+    
+}

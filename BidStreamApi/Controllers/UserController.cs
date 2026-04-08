@@ -32,5 +32,4 @@ public class UserController : ApiControllerBase
         var result = await _userService.GetCurrentUserAsync(currentAccessToken, User.GetRequiredUserId());
         return HandleResult(result);
     }
-    
 }

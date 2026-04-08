@@ -3,12 +3,7 @@ namespace BidStream.Services;
 using BidStream.Common;
 using BidStream.Data;
 using BidStream.Models.DTOs.Auth;
-using BidStream.Models.Entities;
 using BidStream.Services.Interface;
-using Microsoft.EntityFrameworkCore;
-using Mapster;
-using BidStream.Models.DTOs.RefreshToken;
-using System.Security.Claims;
 using BidStream.Extensions;
 
 public class UserService : IUserService
@@ -28,7 +23,7 @@ public class UserService : IUserService
         _refreshTokenService = refreshTokenService;
     }
 
-    public async Task<ServiceResult<UserResponse?>> GetCurrentUserAsync(string currentToken, int userId)
+    public async Task<ServiceResult<UserResponse?>> GetCurrentUserAsync(string currentToken, Guid userId)
     {
         var user = await _context.Users.FindAsync(userId);
         if (user == null)

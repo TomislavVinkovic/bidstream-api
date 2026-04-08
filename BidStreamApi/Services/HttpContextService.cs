@@ -5,11 +5,11 @@ using BidStream.Services.Interface;
 public class HttpContextService : IHttpContextService
 {
 
-    private readonly HttpContextAccessor _httpContextAccessor;
+    private readonly IHttpContextAccessor _httpContextAccessor;
     private readonly IConfiguration _configuration;
 
     public HttpContextService(
-        HttpContextAccessor httpContextAccessor,
+        IHttpContextAccessor httpContextAccessor,
         IConfiguration configuration
     )
     {

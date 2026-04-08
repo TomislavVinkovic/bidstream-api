@@ -5,5 +5,5 @@ namespace BidStream.Services.Interface;
 
 public interface IUserService
 {
-    Task<ServiceResult<UserResponse?>> GetCurrentUserAsync(string currentToken, int userId);
+    Task<ServiceResult<UserResponse?>> GetCurrentUserAsync(string currentToken, Guid userId);
 }

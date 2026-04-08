@@ -28,18 +28,6 @@ public class AuthService : IAuthService
         _refreshTokenService = refreshTokenService;
     }
 
-    public async Task<ServiceResult<UserResponse?>> GetCurrentUserAsync(string currentToken, int userId)
-    {
-        var user = await _context.Users.FindAsync(userId);
-        if (user == null)
-        {
-            return ServiceResult<UserResponse?>.NotFound();
-        }
-
-        var userDto = user.ToUserDto(currentToken);
-        return ServiceResult<UserResponse?>.Ok(new UserResponse(userDto));
-    }
-
     public async Task<ServiceResult<UserResponse?>> LoginAsync(LoginDto dto)
     {
         var user = await _context.Users
@@ -58,7 +46,7 @@ public class AuthService : IAuthService
         return ServiceResult<UserResponse?>.Ok(new UserResponse(userDto));
     }
 
-    public async Task<ServiceResult<bool>> LogoutAsync(int userId, string rawRefreshToken)
+    public async Task<ServiceResult<bool>> LogoutAsync(Guid userId, string rawRefreshToken)
     {
         bool revoked = await _refreshTokenService.RevokeAsync(rawRefreshToken);
         if(!revoked)
@@ -72,9 +60,9 @@ public class AuthService : IAuthService
     public async Task<ServiceResult<UserResponse?>> RefreshAsync(TokenRequest request)
     {
         var principal = _jwtService.GetPrincipalFromExpiredToken(request.AccessToken);
-        var userIdString = principal?.FindFirstValue(ClaimTypes.NameIdentifier);
+        var userId = principal?.GetOptionalUserId().ToString();
 
-        if (string.IsNullOrEmpty(userIdString))
+        if (string.IsNullOrEmpty(userId))
         {
             return ServiceResult<UserResponse?>.BadRequest("Invalid access token.");
         }
@@ -96,7 +84,7 @@ public class AuthService : IAuthService
             return ServiceResult<UserResponse?>.BadRequest("Refresh token expired.");
         }
 
-        var renewDto = new RenewRefreshTokenDto(request.RefreshToken, Guid.Parse(userIdString));
+        var renewDto = new RenewRefreshTokenDto(request.RefreshToken, Guid.Parse(userId));
         var renewResult = await _refreshTokenService.RenewTokenAsync(renewDto);
 
         if(renewResult == null)
