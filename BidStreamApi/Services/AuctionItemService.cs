@@ -4,6 +4,7 @@ using BidStream.Models.DTOs.AuctionItem;
 using BidStream.Models.Entities;
 using BidStream.Services.Interface;
 using Mapster;
+using Microsoft.EntityFrameworkCore;
 
 namespace BidStream.Services;
 
@@ -24,7 +25,89 @@ public class AuctionItemService : IAuctionItemService
 
     public async Task<ServiceResult<AuctionItemListResponse>> ListAsync(AuctionItemQueryParameters query)
     {
-        throw new NotImplementedException();
+        var auctionItemsQuery = _context.AuctionItems
+            .Include(a => a.Seller)
+            .Include(a => a.Winner)
+            .Include(a => a.Bids)
+            .AsQueryable();
+        
+        // Querying
+        if(!string.IsNullOrEmpty(query.Title))
+        {
+            auctionItemsQuery = auctionItemsQuery.Where(a => a.Title.ToLowerInvariant().Contains(query.Title.ToLowerInvariant()));
+        }
+        if(query.IsClosed != null)
+        {
+            auctionItemsQuery = auctionItemsQuery.Where(a => a.IsClosed == query.IsClosed);
+        }
+        if(query.EndTime != null)
+        {
+            // Fetch all auction items that have an end time before the designated end time
+            auctionItemsQuery = auctionItemsQuery.Where(a => a.EndTime.CompareTo(query.EndTime) < 0);
+        }
+        if(query.BidLow != null)
+        {
+            auctionItemsQuery = auctionItemsQuery.Where(a => a.CurrentHighestBid >= query.BidLow);
+        }
+        if(query.BidHigh != null)
+        {
+            auctionItemsQuery = auctionItemsQuery.Where(a => a.CurrentHighestBid <= query.BidHigh);
+        }
+
+        // Sorting
+        int sortDirection = 1;
+        string sortBy = "createdat";
+
+        List<int> validSortDirections = [-1, 1];
+        List<string> validSortParameters = ["createdat", "currenthighestbid", "endtime", "title"];
+
+        if(query.SortDirection.HasValue)
+        {
+            if(validSortDirections.Contains(query.SortDirection.Value))
+            {
+                sortDirection = query.SortDirection.Value;
+            }
+        }
+        if(query.SortBy != null)
+        {
+            sortBy = query.SortBy.ToLowerInvariant();
+        }
+
+        if (sortDirection == 1)
+        {
+            auctionItemsQuery = sortBy switch
+            {
+                "title" => auctionItemsQuery.OrderBy(a => a.Title),
+                "endtime" => auctionItemsQuery.OrderBy(a => a.EndTime),
+                "currenthighestbid" => auctionItemsQuery.OrderBy(a => a.CurrentHighestBid),
+                _ => auctionItemsQuery.OrderBy(a => a.CreatedAt)
+            };
+        }
+        else
+        {
+            auctionItemsQuery = sortBy switch
+            {
+                "title" => auctionItemsQuery.OrderByDescending(a => a.Title),
+                "endtime" => auctionItemsQuery.OrderByDescending(a => a.EndTime),
+                "currenthighestbid" => auctionItemsQuery.OrderByDescending(a => a.CurrentHighestBid),
+                _ => auctionItemsQuery.OrderByDescending(a => a.CreatedAt)
+            };
+        }
+
+        var auctionItemsCount = await auctionItemsQuery.CountAsync();
+        var auctionItems = auctionItemsQuery
+            .Skip(query.Offset)
+            .Take(query.Limit)
+            .ToListAsync();
+        
+        var auctionItemDtos = auctionItems.Adapt<List<AuctionItemDto>>();
+        var response = new AuctionItemListResponse
+        {
+            AuctionItems = auctionItemDtos,
+            AuctionItemsCount = auctionItemsCount
+        };
+
+        return ServiceResult<AuctionItemListResponse>.Ok(response);
     }
 
     public async Task<ServiceResult<AuctionItemResponse>> CreateAsync(CreateAuctionItemDto dto, Guid userId)

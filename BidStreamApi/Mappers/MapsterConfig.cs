@@ -18,7 +18,7 @@ public static class MapsterConfig
 
         TypeAdapterConfig<AuctionItem, AuctionItemDto>.NewConfig()
             .Map(dest => dest.Seller, src => src.Seller.Adapt<ProfileDto>())
-            .Map(dest => dest.Winner, src => src.Winner == null ? src.Winner.Adapt<ProfileDto>() : null)
+            .Map(dest => dest.Winner, src => src.Winner.Adapt<ProfileDto>())
             .Ignore(dest => dest.Images);        
     }
 }

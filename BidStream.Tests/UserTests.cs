@@ -40,13 +40,13 @@ public class UserTests : IClassFixture<BidStreamTestFactory>
 
         _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var response = await _client.GetAsync("/api/user");
+        var response = await _client.GetAsync("/api/users");
 
         await response.ShouldBeOkAsync();
         
         // Addition: Test that if we remove the token, we get a 401 Unauthorized
         _client.DefaultRequestHeaders.Authorization = null;
-        var unauthorizedResponse = await _client.GetAsync("/api/user");
+        var unauthorizedResponse = await _client.GetAsync("/api/users");
         unauthorizedResponse.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 }

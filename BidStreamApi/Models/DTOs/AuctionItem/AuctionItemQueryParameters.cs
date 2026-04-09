@@ -8,6 +8,8 @@ public class AuctionItemQueryParameters
     public string? SellerName { get; set; }
     public decimal? BidLow { get; set; }
     public decimal? BidHigh { get; set; }
+    public int? SortDirection { get; set; }
+    public string? SortBy { get; set; }
     public int Limit { get; set; } = 20;
     public int Offset { get; set; } = 0;
 }
