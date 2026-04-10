@@ -55,4 +55,22 @@ public class FileService : IFileService
 
         return uploadedUrls.ToList();
     }
+
+    public async Task<bool> DeleteFile(string relativeUrl)
+    {
+        if(string.IsNullOrEmpty(relativeUrl))
+        {
+            return false;
+        }
+        var fileName = Path.GetFileName(relativeUrl);
+        var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads");
+        var physicalFilePath = Path.Combine(uploadsFolder, fileName);
+
+        if(File.Exists(physicalFilePath))
+        {
+            File.Delete(physicalFilePath);
+        }
+
+        return true;
+    }
 }

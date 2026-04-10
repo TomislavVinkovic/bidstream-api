@@ -11,7 +11,7 @@ public static class MapsterConfig
     {
         TypeAdapterConfig<CreateAuctionItemFormDto, CreateAuctionItemDto>.NewConfig()
             .Ignore(dest => dest.Images);
-        
+           
         TypeAdapterConfig<CreateAuctionItemDto, AuctionItem>.NewConfig()
             .Map(dest => dest.CurrentHighestBid, src => src.StartingPrice)
             .Map(dest => dest.Images, src => src.Images.Select(i => i.Adapt<AuctionImage>()));

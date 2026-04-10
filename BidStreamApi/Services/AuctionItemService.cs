@@ -23,6 +23,20 @@ public class AuctionItemService : IAuctionItemService
         _fileService = fileService;
     }
 
+    public async Task<ServiceResult<AuctionItemResponse>> GetByIdAsync(Guid id)
+    {
+        var auctionItem = await _context.AuctionItems.FirstOrDefaultAsync(a => a.Id == id);
+        if(auctionItem == null)
+        {
+            return ServiceResult<AuctionItemResponse>.NotFound($"Auction item with id {id} not found");
+        }
+
+        var dto = AuctionItemDtoFactory(auctionItem);
+        var response = new AuctionItemResponse(dto);
+
+        return ServiceResult<AuctionItemResponse>.Ok(response);
+    }
+
     public async Task<ServiceResult<AuctionItemListResponse>> ListAsync(AuctionItemQueryParameters query)
     {
         var auctionItemsQuery = _context.AuctionItems
@@ -126,6 +140,71 @@ public class AuctionItemService : IAuctionItemService
         var response = new AuctionItemResponse(auctionItemDto);
 
         return ServiceResult<AuctionItemResponse>.Ok(response);
+    }
+
+    public async Task<ServiceResult<UpdateAuctionItemResult?>> UpdateAsync(Guid id, UpdateAuctionItemDto dto, Guid userId)
+    {
+        var auction = await _context.AuctionItems
+            .Include(a => a.Images)
+            .FirstOrDefaultAsync(a => a.Id == id);
+        
+        if(auction == null)
+        {
+            return ServiceResult<UpdateAuctionItemResult?>.NotFound($"Auction with {id} not found.");
+        }
+        if (auction.SellerId != userId)
+        {
+            return ServiceResult<UpdateAuctionItemResult?>.Unauthorized();
+        }
+
+        if (!string.IsNullOrEmpty(dto.Title)) auction.Title = dto.Title;
+        if (!string.IsNullOrEmpty(dto.Description)) auction.Description = dto.Description;
+        if (dto.StartingPrice.HasValue) auction.StartingPrice = dto.StartingPrice.Value;
+        if (dto.EndTime.HasValue) auction.EndTime = dto.EndTime.Value;
+
+        var deletedUrls = new List<string>();
+
+        if(dto.ImagesToRemove.Any())
+        {
+            var imagesToDelete = auction.Images.Where(i => dto.ImagesToRemove.Contains(i.Id));
+            foreach(var image in imagesToDelete)
+            {
+                deletedUrls.Add(image.ImageUrl);
+                auction.Images.Remove(image);
+            }
+        }
+
+        foreach(var url in dto.NewImageUrls)
+        {
+            auction.Images.Add
+            (
+                new AuctionImage
+                {
+                    ImageUrl = url,
+                    IsPrimary = false
+                }
+            );
+        }
+
+        // Ensure there is a primary image
+        if (auction.Images.Any() && !auction.Images.Any(i => i.IsPrimary))
+        {
+            auction.Images.First().IsPrimary = true;
+        }
+
+        await _context.SaveChangesAsync();
+        await _context.Entry(auction).Reference(a => a.Seller).LoadAsync();
+
+        var auctionItemDto = AuctionItemDtoFactory(auction);
+        var response = new AuctionItemResponse(auctionItemDto);
+
+        var result = new UpdateAuctionItemResult
+        {
+            Response = response,
+            DeletedImageUrls = deletedUrls
+        };
+
+        return ServiceResult<UpdateAuctionItemResult?>.Ok(result);
     }
 
     private AuctionItemDto AuctionItemDtoFactory(AuctionItem auctionItem)
